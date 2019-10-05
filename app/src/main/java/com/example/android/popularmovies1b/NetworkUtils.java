@@ -21,7 +21,7 @@ public final class NetworkUtils {
             = "https://api.themoviedb.org/3/movie/top_rated";
 
     // Insert your API key between quotation marks
-    private static final String api_key = "***REMOVED***";
+    private static final String api_key = "";
 
     private static final String language = "en-US";
     private static final int pageNumber = 1;
