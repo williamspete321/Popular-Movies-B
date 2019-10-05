@@ -8,24 +8,22 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.Menu;
-import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.net.URL;
 
 public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieItemClickListener {
 
     private RecyclerView recyclerView;
-    private MovieAdapter movieAdapter;
+    private static MovieAdapter movieAdapter;
     private TextView mErrorMessageDisplay;
     private ProgressBar mLoadingIndicator;
 
     //default is to sort by most popular
-    private String sortByMethod = "popularity.desc";
+    private String sortByMethod = "popular";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +36,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         int numberOfColumns = 2;
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this,numberOfColumns);
         movieAdapter = new MovieAdapter(this);
-        //movieAdapter.setMovieData(data);
         recyclerView.setLayoutManager(gridLayoutManager);
         recyclerView.setAdapter(movieAdapter);
 
@@ -75,11 +72,11 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
         switch(item.getItemId()) {
             case R.id.action_most_popular:
-                sortByMethod = "popularity.desc";
+                sortByMethod = "popular";
                 refreshData();
                 return true;
             case R.id.action_highest_rated:
-                sortByMethod = "vote_average.desc";
+                sortByMethod = "top_rated";
                 refreshData();
                 return true;
         }

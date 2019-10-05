@@ -15,34 +15,29 @@ public final class NetworkUtils {
 
     private static final String TAG = NetworkUtils.class.getSimpleName();
 
-    private static final String MOVIE_BASE_URL =
-            "https://api.themoviedb.org/3/discover/movie";
+    private static final String MOVIE_BASE_POPULAR_URL
+            = "https://api.themoviedb.org/3/movie/popular";
+    private static final String MOVIE_BASE_TOP_RATED_URL
+            = "https://api.themoviedb.org/3/movie/top_rated";
 
     // Insert your API key between quotation marks
-    private static final String api_key = "";
+    private static final String api_key = "***REMOVED***";
 
     private static final String language = "en-US";
-    private static final boolean includeAdult = false;
-    private static final boolean includeVideo = false;
     private static final int pageNumber = 1;
 
 
     final static String API_PARAM = "api_key";
     final static String LANG_PARAM = "language";
-    final static String SORT_PARAM = "sort_by";
-    final static String ADULT_PARAM = "include_adult";
-    final static String INCL_VID_PARAM = "include_video";
     final static String PAGE_PARAM = "page";
 
     public static URL buildUrl(String sortMethod) {
-        Uri builtUri = Uri.parse(MOVIE_BASE_URL).buildUpon()
-                .appendQueryParameter(API_PARAM,api_key)
-                .appendQueryParameter(LANG_PARAM,language)
-                .appendQueryParameter(SORT_PARAM,sortMethod)
-                .appendQueryParameter(ADULT_PARAM,Boolean.toString(includeAdult))
-                .appendQueryParameter(INCL_VID_PARAM,Boolean.toString(includeVideo))
-                .appendQueryParameter(PAGE_PARAM,Integer.toString(pageNumber))
-                .build();
+        Uri builtUri = null;
+        if(sortMethod.equals("popular")) {
+            builtUri = buildUriByPopular();
+        } else {
+            builtUri = buildUriByRated();
+        }
 
         URL url = null;
         try {
@@ -56,8 +51,28 @@ public final class NetworkUtils {
         return url;
     }
 
+    private static Uri buildUriByPopular() {
+        Uri builtUri = Uri.parse(MOVIE_BASE_POPULAR_URL).buildUpon()
+                .appendQueryParameter(API_PARAM,api_key)
+                .appendQueryParameter(LANG_PARAM,language)
+                .appendQueryParameter(PAGE_PARAM,Integer.toString(pageNumber))
+                .build();
+        return builtUri;
+    }
+
+    private static Uri buildUriByRated() {
+        Uri builtUri = Uri.parse(MOVIE_BASE_TOP_RATED_URL).buildUpon()
+                .appendQueryParameter(API_PARAM,api_key)
+                .appendQueryParameter(LANG_PARAM,language)
+                .appendQueryParameter(PAGE_PARAM,Integer.toString(pageNumber))
+                .build();
+        return builtUri;
+    }
+
     public static String getResponseFromHttpUrl(URL url) throws IOException {
         HttpsURLConnection urlConnection = (HttpsURLConnection) url.openConnection();
+        urlConnection.setConnectTimeout(5000);
+        urlConnection.setReadTimeout(10000);
         try {
             InputStream in = urlConnection.getInputStream();
 

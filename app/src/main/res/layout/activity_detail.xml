@@ -21,9 +21,9 @@
 
             <ImageView
                 android:id="@+id/iv_poster"
-                android:layout_width="200dp"
-                android:layout_height="300dp"
-                android:padding="8dp"
+                android:layout_width="@dimen/poster_width"
+                android:layout_height="@dimen/poster_height"
+                android:padding="@dimen/padding_sz_regular"
                 android:visibility="visible"
                 android:contentDescription="@string/poster_image"/>
 
@@ -41,33 +41,34 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:padding="8dp"
+            android:padding="@dimen/padding_sz_regular"
             android:orientation="vertical">
 
 
             <TextView
                 android:id="@+id/tv_title"
-                android:layout_width="wrap_content"
+                android:layout_width="@dimen/text_title_width"
                 android:layout_height="wrap_content"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:paddingTop="16dp"
-                android:paddingBottom="16dp"
-                android:layout_gravity="center"/>
+                android:layout_gravity="center"
+                android:textAlignment="center"
+                android:paddingTop="@dimen/padding_sz_large"
+                android:paddingBottom="@dimen/padding_sz_large"
+                android:textSize="@dimen/text_sz_large"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tv_release_date"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
-                android:paddingBottom="8dp"
+                android:textSize="@dimen/text_sz_regular"
+                android:paddingBottom="@dimen/padding_sz_regular"
                 android:layout_gravity="start"/>
 
             <TextView
                 android:id="@+id/tv_user_rating"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textSize="12sp"
+                android:textSize="@dimen/text_sz_regular"
                 android:layout_gravity="start"/>
         </LinearLayout>
 
@@ -79,15 +80,15 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:layout_below="@+id/linear_layout_top"
-        android:layout_marginTop="16dp">
+        android:layout_marginTop="@dimen/margin_large">
 
         <TextView
             android:id="@+id/tv_overview"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="16sp"
+            android:textSize="@dimen/text_sz_large"
             android:textAlignment="center"
-            android:padding="8dp">
+            android:padding="@dimen/padding_sz_regular">
         </TextView>
 
     </LinearLayout>
