@@ -1,29 +1,47 @@
 package com.example.android.popularmovies1b;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.LiveData;
+import androidx.lifecycle.Observer;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
+import java.lang.ref.WeakReference;
 import java.net.URL;
+import java.util.List;
 
 public class MainActivity extends AppCompatActivity implements MovieAdapter.MovieItemClickListener {
 
-    private RecyclerView recyclerView;
+    private static RecyclerView recyclerView;
     private static MovieAdapter movieAdapter;
-    private TextView mErrorMessageDisplay;
-    private ProgressBar mLoadingIndicator;
+    private static Movie[] moviesArray;
+    private static TextView mErrorMessageDisplay;
+    private static ProgressBar mLoadingIndicator;
 
+    final static String POPULAR = "popular";
+    final static String TOP_RATED = "top_rated";
+    final static String FAVORITE = "favorite";
     //default is to sort by most popular
-    private String sortByMethod = "popular";
+    private String selectionMethod = POPULAR;
+
+    public static final String TAG = MainActivity.class.getSimpleName();
+    public static final String SELECTION_METHOD = "selection method";
+
+    private static AppDatabase mDb;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +51,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         recyclerView = findViewById(R.id.movies_recycler_view);
         mErrorMessageDisplay = findViewById(R.id.tv_error_message_display);
 
+
         int numberOfColumns = 2;
         GridLayoutManager gridLayoutManager = new GridLayoutManager(this,numberOfColumns);
         movieAdapter = new MovieAdapter(this);
@@ -41,21 +60,56 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
         mLoadingIndicator = findViewById(R.id.pb_loading_indicator);
 
-        loadMovieData(sortByMethod);
+        if(savedInstanceState != null && savedInstanceState.containsKey(SELECTION_METHOD)) {
+            selectionMethod = savedInstanceState.getString(SELECTION_METHOD);
+        }
+
+        loadMovieData(selectionMethod);
+
+        mDb = AppDatabase.getInstance(getApplicationContext());
     }
 
-    private void loadMovieData(String sortByMethod) {
+    @Override
+    protected void onSaveInstanceState(@NonNull Bundle outState) {
+        super.onSaveInstanceState(outState);
+        outState.putString(SELECTION_METHOD, selectionMethod);
+    }
+
+    private void loadMovieData(String selectionMethod) {
         showMovieDataView();
 
-        new FetchMovieDataTask().execute(sortByMethod);
+        switch (selectionMethod) {
+            case POPULAR:
+                new FetchMovieDataTask(getApplication()).execute(POPULAR);
+                break;
+            case TOP_RATED:
+                new FetchMovieDataTask(getApplication()).execute(TOP_RATED);
+                break;
+            case FAVORITE:
+                loadFavoriteMovies();
+                break;
+        }
     }
 
-    private void showMovieDataView() {
+    private void loadFavoriteMovies() {
+        final LiveData<List<Movie>> favoriteMovies = mDb.movieDao().loadAllFavoriteMovies();
+        favoriteMovies.observe(this, new Observer<List<Movie>>() {
+            @Override
+            public void onChanged(List<Movie> movies) {
+                Log.d(TAG, "Receiving database update from LiveData");
+                if (selectionMethod.equals(FAVORITE)) {
+                    movieAdapter.setFavoriteMovieList(movies);
+                }
+            }
+        });
+    }
+
+    private static void showMovieDataView() {
         mErrorMessageDisplay.setVisibility(View.INVISIBLE);
         recyclerView.setVisibility(View.VISIBLE);
     }
 
-    private void showErrorMessage() {
+    private static void showErrorMessage() {
         recyclerView.setVisibility(View.INVISIBLE);
         mErrorMessageDisplay.setVisibility(View.VISIBLE);
     }
@@ -72,11 +126,15 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
         switch(item.getItemId()) {
             case R.id.action_most_popular:
-                sortByMethod = "popular";
+                selectionMethod = POPULAR;
                 refreshData();
                 return true;
             case R.id.action_highest_rated:
-                sortByMethod = "top_rated";
+                selectionMethod = TOP_RATED;
+                refreshData();
+                return true;
+            case R.id.action_user_favorite:
+                selectionMethod = FAVORITE;
                 refreshData();
                 return true;
         }
@@ -86,10 +144,15 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
     private void refreshData() {
         movieAdapter.setMovieData(null);
-        loadMovieData(sortByMethod);
+        loadMovieData(selectionMethod);
     }
 
-    public class FetchMovieDataTask extends AsyncTask<String, Void, Movie[]> {
+    public static class FetchMovieDataTask extends AsyncTask<String, Void, Movie[]> {
+        private WeakReference<Application> mApplicationReference;
+
+        FetchMovieDataTask(Application context) {
+            mApplicationReference = new WeakReference<>(context);
+        }
 
         @Override
         protected void onPreExecute() {
@@ -104,14 +167,14 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
             }
 
             String sortByPopular = params[0];
-            URL movieRequestUrl = NetworkUtils.buildUrl(sortByPopular);
+            URL movieRequestUrl = NetworkUtils.buildUrlForMovieList(sortByPopular);
 
             try {
                 String jsonMovieResponse =
                         NetworkUtils.getResponseFromHttpUrl(movieRequestUrl);
 
                 Movie[] simpleMovieData = OpenMovieJsonUtils
-                        .getSimpleMovieStringFromJson(MainActivity.this, jsonMovieResponse);
+                        .getSimpleMovieStringFromJson(jsonMovieResponse);
 
                 return simpleMovieData;
             } catch (Exception e) {
@@ -133,9 +196,21 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     }
 
     @Override
-    public void onMovieItemClick(Movie movie) {
-        Intent intent = new Intent(this, DetailActivity.class);
-        intent.putExtra(DetailActivity.MOVIE, movie);
-        startActivity(intent);
+    public void onMovieItemClick(final Movie movie) {
+        AppExecuters.getInstance().diskIO().execute(new Runnable() {
+            @Override
+            public void run() {
+                Movie movieFromDB = mDb.movieDao().getMovieById(movie.getId());
+                if(movieFromDB != null) {
+                    Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
+                    intent.putExtra(DetailActivity.MOVIE, movieFromDB);
+                    startActivity(intent);
+                } else {
+                    Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
+                    intent.putExtra(DetailActivity.MOVIE, movie);
+                    startActivity(intent);
+                }
+            }
+        });
     }
 }

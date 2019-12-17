@@ -1,31 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    tools:context=".DetailActivity">
 
-    <LinearLayout
-        android:id="@+id/linear_layout_top"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_height="wrap_content"
+    android:layout_width="match_parent">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:weightSum="2"
-        android:baselineAligned="false">
+        android:paddingRight="@dimen/movie_detail_horizontal_padding"
+        android:paddingLeft="@dimen/movie_detail_horizontal_padding"
+        android:paddingBottom="@dimen/movie_detail_horizontal_padding"
+        android:paddingTop="@dimen/movie_detail_horizontal_padding">
 
         <FrameLayout
+            android:id="@+id/iv_holder_layout"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1">
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
 
             <ImageView
                 android:id="@+id/iv_poster"
                 android:layout_width="@dimen/poster_width"
                 android:layout_height="@dimen/poster_height"
-                android:padding="@dimen/padding_sz_regular"
-                android:visibility="visible"
-                android:contentDescription="@string/poster_image"/>
+                android:contentDescription="@string/poster_image"
+                android:visibility="visible">
+            </ImageView>
 
             <TextView
                 android:id="@+id/tv_detail_no_image"
@@ -34,53 +36,60 @@
                 android:text="@string/no_image_message"
                 android:layout_gravity="center"
                 android:visibility="invisible"/>
-
         </FrameLayout>
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/tv_title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:layout_marginTop="64dp"
+            android:textAlignment="center"
+            android:textSize="@dimen/text_sz_large"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintHorizontal_bias="0.312"
+            app:layout_constraintStart_toEndOf="@+id/iv_holder_layout"
+            app:layout_constraintTop_toTopOf="@id/iv_holder_layout"
+            tools:text="Jurassic Park" />
+
+        <TextView
+            android:id="@+id/tv_release_date"
+            android:layout_width="128dp"
+            android:layout_height="wrap_content"
+            android:textAlignment="center"
+            android:textSize="@dimen/text_sz_large"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            app:layout_constraintStart_toStartOf="@id/tv_title"
+            app:layout_constraintEnd_toEndOf="@id/tv_title"
+            app:layout_constraintTop_toBottomOf="@id/tv_title"
+            tools:text="Release Date: 1994-07-14" />
+
+        <TextView
+            android:id="@+id/tv_user_rating"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:padding="@dimen/padding_sz_regular"
-            android:orientation="vertical">
+            android:textSize="@dimen/text_sz_large"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"
+            tools:text="Rating: 9.8"
+            app:layout_constraintStart_toStartOf="@id/tv_title"
+            app:layout_constraintEnd_toEndOf="@id/tv_title"
+            app:layout_constraintTop_toBottomOf="@id/tv_release_date"
+            />
 
-
-            <TextView
-                android:id="@+id/tv_title"
-                android:layout_width="@dimen/text_title_width"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:textAlignment="center"
-                android:paddingTop="@dimen/padding_sz_large"
-                android:paddingBottom="@dimen/padding_sz_large"
-                android:textSize="@dimen/text_sz_large"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/tv_release_date"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/text_sz_regular"
-                android:paddingBottom="@dimen/padding_sz_regular"
-                android:layout_gravity="start"/>
-
-            <TextView
-                android:id="@+id/tv_user_rating"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:textSize="@dimen/text_sz_regular"
-                android:layout_gravity="start"/>
-        </LinearLayout>
-
-    </LinearLayout>
-
-    <LinearLayout
-        android:id="@+id/linear_layout_bottom"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:layout_below="@+id/linear_layout_top"
-        android:layout_marginTop="@dimen/margin_large">
+        <CheckBox
+            android:id="@+id/cb_favorite_selector"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/movie_detail_vertical_padding"
+            app:layout_constraintStart_toStartOf="@id/tv_title"
+            app:layout_constraintEnd_toEndOf="@id/tv_title"
+            app:layout_constraintTop_toBottomOf="@+id/tv_user_rating"
+            android:background="@drawable/checkbox_selector"
+            android:button="@null"
+            android:onClick="onClickCheckFavorite"/>
 
         <TextView
             android:id="@+id/tv_overview"
@@ -88,10 +97,100 @@
             android:layout_height="wrap_content"
             android:textSize="@dimen/text_sz_large"
             android:textAlignment="center"
-            android:padding="@dimen/padding_sz_regular">
+            android:padding="@dimen/movie_detail_vertical_padding"
+            app:layout_constraintTop_toBottomOf="@id/iv_holder_layout"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            tools:text="After fighting his demons for decades, John Rambo now lives in peace on his family ranch in Arizona, but his rest is interrupted when Gabriela, the granddaughter of his housekeeper María, disappears after crossing the border into Mexico to meet her biological father. Rambo, who has become a true father figure for Gabriela over the years, undertakes a desperate and dangerous journey to find her.">
         </TextView>
 
-    </LinearLayout>
+        <TextView
+            android:id="@+id/tv_trailer_label"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textSize="@dimen/text_sz_large"
+            android:textStyle="bold"
+            tools:text="Trailers:"
+            app:layout_constraintTop_toBottomOf="@+id/tv_overview"
+            app:layout_constraintStart_toStartOf="@+id/tv_overview"
+            android:padding="@dimen/movie_detail_vertical_padding"
+            />
 
+        <ImageButton
+            android:id="@+id/iv_play"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/ic_play_arrow_black_48dp"
+            android:paddingTop="@dimen/movie_detail_vertical_padding"
+            android:paddingBottom="@dimen/movie_detail_vertical_padding"
+            android:onClick="onClickOpenTrailer"
+            app:layout_constraintTop_toBottomOf="@id/tv_trailer_label"
+            app:layout_constraintStart_toStartOf="@id/tv_trailer_label"
+            app:layout_constraintEnd_toEndOf="@id/tv_trailer_label"
+            android:background="@null" />
 
-</RelativeLayout>
+        <TextView
+            android:id="@+id/tv_trailer_one"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/movie_detail_horizontal_padding"
+            app:layout_constraintStart_toEndOf="@+id/iv_play"
+            app:layout_constraintTop_toTopOf="@id/iv_play"
+            app:layout_constraintBottom_toBottomOf="@id/iv_play"
+            android:textSize="@dimen/text_sz_large"
+            android:text="@string/trailer_1"
+            tools:text="Trailer 1"/>
+
+        <ImageButton
+            android:id="@+id/iv_play_two"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/movie_detail_vertical_padding"
+            android:paddingBottom="@dimen/movie_detail_vertical_padding"
+            android:onClick="onClickOpenTrailer"
+            android:src="@drawable/ic_play_arrow_black_48dp"
+            app:layout_constraintTop_toBottomOf="@id/tv_trailer_one"
+            app:layout_constraintStart_toStartOf="@id/tv_trailer_label"
+            app:layout_constraintEnd_toEndOf="@id/tv_trailer_label"
+            android:background="@null"/>
+
+        <TextView
+            android:id="@+id/tv_trailer_two"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/movie_detail_horizontal_padding"
+            app:layout_constraintStart_toEndOf="@+id/iv_play_two"
+            app:layout_constraintTop_toTopOf="@id/iv_play_two"
+            app:layout_constraintBottom_toBottomOf="@id/iv_play_two"
+            android:textSize="@dimen/text_sz_large"
+            android:text="@string/trailer_2"
+            tools:text="Trailer 2"/>
+
+        <ImageButton
+            android:id="@+id/iv_play_three"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingTop="@dimen/movie_detail_vertical_padding"
+            android:paddingBottom="@dimen/movie_detail_vertical_padding"
+            android:onClick="onClickOpenTrailer"
+            android:src="@drawable/ic_play_arrow_black_48dp"
+            app:layout_constraintTop_toBottomOf="@id/tv_trailer_two"
+            app:layout_constraintStart_toStartOf="@id/tv_trailer_label"
+            app:layout_constraintEnd_toEndOf="@id/tv_trailer_label"
+            android:background="@null"/>
+
+        <TextView
+            android:id="@+id/tv_trailer_three"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:paddingStart="@dimen/movie_detail_horizontal_padding"
+            app:layout_constraintStart_toEndOf="@+id/iv_play_three"
+            app:layout_constraintTop_toTopOf="@id/iv_play_three"
+            app:layout_constraintBottom_toBottomOf="@id/iv_play_three"
+            android:textSize="@dimen/text_sz_large"
+            android:text="@string/trailer_3"
+            tools:text="Trailer 3"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</ScrollView>

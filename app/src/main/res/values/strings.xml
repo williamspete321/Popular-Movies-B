@@ -5,6 +5,12 @@
     <string name="poster_image">Poster Image</string>
     <string name="most_popular">Most Popular</string>
     <string name="highest_rated">Highest Rated</string>
+    <string name="favorite">Favorite</string>
     <string name="release_date">Release Date: %1$s</string>
     <string name="rating">Rating: %1.1f</string>
+
+    <string name="trailer_1">Trailer 1</string>
+    <string name="trailer_2">Trailer 2</string>
+    <string name="trailer_3">Trailer 3</string>
+    <string name="youtube_uri">https://www.youtube.com/watch?v=%s</string>
 </resources>

@@ -14,6 +14,8 @@ import com.squareup.picasso.Picasso;
 
 import org.w3c.dom.Text;
 
+import java.util.List;
+
 public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapterViewHolder> {
     private Movie[] mMovieData;
 
@@ -86,6 +88,17 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
 
     public void setMovieData(Movie[] movieData) {
         mMovieData = movieData;
+        notifyDataSetChanged();
+    }
+
+    public void setFavoriteMovieList(List<Movie> movieList) {
+        Movie[] favoriteMovies = new Movie[movieList.size()];
+
+        for(int i = 0; i < favoriteMovies.length; i++) {
+            favoriteMovies[i] = movieList.get(i);
+        }
+
+        mMovieData = favoriteMovies;
         notifyDataSetChanged();
     }
 
