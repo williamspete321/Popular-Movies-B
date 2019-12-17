@@ -29,7 +29,6 @@ public final class NetworkUtils {
     final static String API_PARAM = "api_key";
     final static String LANG_PARAM = "language";
     final static String PAGE_PARAM = "page";
-    final static String ID_PARAM = "movie_id";
 
     //creates URL for list of movies by popular or highest rated
     public static URL buildUrlForMovieList(String sortMethod) {

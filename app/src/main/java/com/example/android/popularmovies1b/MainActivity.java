@@ -27,7 +27,6 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
 
     private static RecyclerView recyclerView;
     private static MovieAdapter movieAdapter;
-    private static Movie[] moviesArray;
     private static TextView mErrorMessageDisplay;
     private static ProgressBar mLoadingIndicator;
 
@@ -40,6 +39,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     public static final String TAG = MainActivity.class.getSimpleName();
     public static final String SELECTION_METHOD = "selection method";
 
+    private Movie[] favoriteMovies;
     private static AppDatabase mDb;
 
 
@@ -47,6 +47,8 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mDb = AppDatabase.getInstance(getApplicationContext());
 
         recyclerView = findViewById(R.id.movies_recycler_view);
         mErrorMessageDisplay = findViewById(R.id.tv_error_message_display);
@@ -64,9 +66,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
             selectionMethod = savedInstanceState.getString(SELECTION_METHOD);
         }
 
+        loadFavoriteMoviesFromDb();
         loadMovieData(selectionMethod);
 
-        mDb = AppDatabase.getInstance(getApplicationContext());
     }
 
     @Override
@@ -86,22 +88,29 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
                 new FetchMovieDataTask(getApplication()).execute(TOP_RATED);
                 break;
             case FAVORITE:
-                loadFavoriteMovies();
+                movieAdapter.setMovieData(favoriteMovies);
                 break;
         }
     }
 
-    private void loadFavoriteMovies() {
+    private void loadFavoriteMoviesFromDb() {
         final LiveData<List<Movie>> favoriteMovies = mDb.movieDao().loadAllFavoriteMovies();
         favoriteMovies.observe(this, new Observer<List<Movie>>() {
             @Override
             public void onChanged(List<Movie> movies) {
                 Log.d(TAG, "Receiving database update from LiveData");
-                if (selectionMethod.equals(FAVORITE)) {
-                    movieAdapter.setFavoriteMovieList(movies);
-                }
+                setFavoriteMovieList(movies);
+                refreshData();
             }
         });
+    }
+
+    private void setFavoriteMovieList(List<Movie> movieList) {
+        favoriteMovies = new Movie[movieList.size()];
+
+        for(int i = 0; i < favoriteMovies.length; i++) {
+            favoriteMovies[i] = movieList.get(i);
+        }
     }
 
     private static void showMovieDataView() {
