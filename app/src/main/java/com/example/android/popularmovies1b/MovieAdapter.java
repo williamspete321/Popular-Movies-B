@@ -90,17 +90,5 @@ public class MovieAdapter extends RecyclerView.Adapter<MovieAdapter.MovieAdapter
         mMovieData = movieData;
         notifyDataSetChanged();
     }
-    //move this method to main!!!! ( a similar one)
-    /*
-    public void setFavoriteMovieList(List<Movie> movieList) {
-        Movie[] favoriteMovies = new Movie[movieList.size()];
-
-        for(int i = 0; i < favoriteMovies.length; i++) {
-            favoriteMovies[i] = movieList.get(i);
-        }
-
-        mMovieData = favoriteMovies;
-        notifyDataSetChanged();
-    }*/
 
 }

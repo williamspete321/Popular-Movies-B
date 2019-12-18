@@ -2,13 +2,11 @@ package com.example.android.popularmovies1b;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.lifecycle.LiveData;
 import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProviders;
 import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.app.Application;
-import android.content.Context;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -19,7 +17,6 @@ import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 
-import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.util.List;
 
@@ -39,7 +36,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     public static final String TAG = MainActivity.class.getSimpleName();
     public static final String SELECTION_METHOD = "selection method";
 
-    private Movie[] favoriteMovies;
+    private Movie[] favoriteMoviesArray;
     private static AppDatabase mDb;
 
 
@@ -77,28 +74,33 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         outState.putString(SELECTION_METHOD, selectionMethod);
     }
 
+    private void refreshData() {
+        movieAdapter.setMovieData(null);
+        loadMovieData(selectionMethod);
+    }
+
     private void loadMovieData(String selectionMethod) {
         showMovieDataView();
 
         switch (selectionMethod) {
             case POPULAR:
-                new FetchMovieDataTask(getApplication()).execute(POPULAR);
+                new FetchMovieDataTask().execute(POPULAR);
                 break;
             case TOP_RATED:
-                new FetchMovieDataTask(getApplication()).execute(TOP_RATED);
+                new FetchMovieDataTask().execute(TOP_RATED);
                 break;
             case FAVORITE:
-                movieAdapter.setMovieData(favoriteMovies);
+                movieAdapter.setMovieData(favoriteMoviesArray);
                 break;
         }
     }
 
     private void loadFavoriteMoviesFromDb() {
-        final LiveData<List<Movie>> favoriteMovies = mDb.movieDao().loadAllFavoriteMovies();
-        favoriteMovies.observe(this, new Observer<List<Movie>>() {
+        MainViewModel viewModel = ViewModelProviders.of(this).get(MainViewModel.class);
+        viewModel.getFavoriteMovies().observe(this, new Observer<List<Movie>>() {
             @Override
             public void onChanged(List<Movie> movies) {
-                Log.d(TAG, "Receiving database update from LiveData");
+                Log.d(TAG, "Updating list of favorite movies from LiveData in ViewModel");
                 setFavoriteMovieList(movies);
                 refreshData();
             }
@@ -106,10 +108,10 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
     }
 
     private void setFavoriteMovieList(List<Movie> movieList) {
-        favoriteMovies = new Movie[movieList.size()];
+        favoriteMoviesArray = new Movie[movieList.size()];
 
-        for(int i = 0; i < favoriteMovies.length; i++) {
-            favoriteMovies[i] = movieList.get(i);
+        for(int i = 0; i < favoriteMoviesArray.length; i++) {
+            favoriteMoviesArray[i] = movieList.get(i);
         }
     }
 
@@ -151,17 +153,7 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         return super.onOptionsItemSelected(item);
     }
 
-    private void refreshData() {
-        movieAdapter.setMovieData(null);
-        loadMovieData(selectionMethod);
-    }
-
     public static class FetchMovieDataTask extends AsyncTask<String, Void, Movie[]> {
-        private WeakReference<Application> mApplicationReference;
-
-        FetchMovieDataTask(Application context) {
-            mApplicationReference = new WeakReference<>(context);
-        }
 
         @Override
         protected void onPreExecute() {
@@ -204,6 +196,12 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
         }
     }
 
+    private void startDetailActivity(Movie movie) {
+        Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
+        intent.putExtra(DetailActivity.MOVIE, movie);
+        startActivity(intent);
+    }
+
     @Override
     public void onMovieItemClick(final Movie movie) {
         AppExecuters.getInstance().diskIO().execute(new Runnable() {
@@ -211,13 +209,9 @@ public class MainActivity extends AppCompatActivity implements MovieAdapter.Movi
             public void run() {
                 Movie movieFromDB = mDb.movieDao().getMovieById(movie.getId());
                 if(movieFromDB != null) {
-                    Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
-                    intent.putExtra(DetailActivity.MOVIE, movieFromDB);
-                    startActivity(intent);
+                    startDetailActivity(movieFromDB);
                 } else {
-                    Intent intent = new Intent(getApplicationContext(), DetailActivity.class);
-                    intent.putExtra(DetailActivity.MOVIE, movie);
-                    startActivity(intent);
+                    startDetailActivity(movie);
                 }
             }
         });
