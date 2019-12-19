@@ -9,8 +9,10 @@
     <string name="release_date">Release Date: %1$s</string>
     <string name="rating">Rating: %1.1f</string>
 
+    <string name="trailers">Trailers</string>
     <string name="trailer_1">Trailer 1</string>
     <string name="trailer_2">Trailer 2</string>
     <string name="trailer_3">Trailer 3</string>
     <string name="youtube_uri">https://www.youtube.com/watch?v=%s</string>
+    <string name="reviews">Reviews</string>
 </resources>

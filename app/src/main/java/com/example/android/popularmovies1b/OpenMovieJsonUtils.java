@@ -118,4 +118,46 @@ public final class OpenMovieJsonUtils {
         return parsedTrailerKeys;
     }
 
+    public static String[] getSimpleReviewStringFromJson(String movieReviewsJsonStr)
+            throws JSONException{
+
+        final String OM_R_RESULTS = "results";
+        final String OM_R_CONTENT = "content";
+        final String OM_MESSAGE_CODE = "cod";
+
+        String[] parsedReviews = null;
+
+        JSONObject trailerJson = new JSONObject(movieReviewsJsonStr);
+
+        if(trailerJson.has(OM_MESSAGE_CODE)) {
+            int errorCode = trailerJson.getInt(OM_MESSAGE_CODE);
+
+            switch(errorCode) {
+                case HttpsURLConnection.HTTP_OK:
+                    break;
+                case HttpsURLConnection.HTTP_NOT_FOUND:
+                    return null;
+                default:
+                    return null;
+            }
+        }
+
+        JSONArray resultsArray = trailerJson.getJSONArray(OM_R_RESULTS);
+
+        // we don't want more than three trailers max; no need to collect more
+        if(resultsArray.length() > 3) {
+            parsedReviews = new String[3];
+        } else {
+            parsedReviews = new String[resultsArray.length()];
+        }
+
+        for(int i = 0; i < parsedReviews.length; i++) {
+            JSONObject jsonObject = resultsArray.getJSONObject(i);
+            String movieReview = jsonObject.getString(OM_R_CONTENT);
+
+            parsedReviews[i] = movieReview;
+        }
+        return parsedReviews;
+    }
+
 }

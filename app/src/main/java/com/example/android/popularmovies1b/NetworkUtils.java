@@ -1,6 +1,7 @@
 package com.example.android.popularmovies1b;
 
 import android.net.Uri;
+import android.print.PageRange;
 import android.util.Log;
 
 import java.io.IOException;
@@ -19,6 +20,7 @@ public final class NetworkUtils {
     private static final String MOVIE_BASE_POPULAR_URL = MOVIE_BASE + "popular";
     private static final String MOVIE_BASE_TOP_RATED_URL = MOVIE_BASE + "top_rated";
     private static final String MOVIE_BASE_VIDEOS_URL = MOVIE_BASE + "%d/videos";
+    private static final String MOVIE_BASE_REVIEWS_URL = MOVIE_BASE + "%d/reviews";
 
     // Insert your API key between quotation marks
     private static final String api_key = "";
@@ -30,15 +32,7 @@ public final class NetworkUtils {
     final static String LANG_PARAM = "language";
     final static String PAGE_PARAM = "page";
 
-    //creates URL for list of movies by popular or highest rated
-    public static URL buildUrlForMovieList(String sortMethod) {
-        Uri builtUri = null;
-        if(sortMethod.equals("popular")) {
-            builtUri = buildMovieListUriByPopular();
-        } else {
-            builtUri = buildMovieListUriByRated();
-        }
-
+    private static URL buildURL(Uri builtUri) {
         URL url = null;
         try {
             url = new URL(builtUri.toString());
@@ -51,20 +45,29 @@ public final class NetworkUtils {
         return url;
     }
 
+    //creates URL for list of movies by popular or highest rated
+    public static URL buildUrlForMovieList(String sortMethod) {
+        Uri builtUri = null;
+        if(sortMethod.equals("popular")) {
+            builtUri = buildMovieListUriByPopular();
+        } else {
+            builtUri = buildMovieListUriByRated();
+        }
+
+        return buildURL(builtUri);
+    }
+
     //creates URL for list of videos related to one movie; uses specific movie id
     public static URL buildUrlForSpecificMovieVideoList(int movieId) {
         Uri builtUri = buildTrailerListUriById(movieId);
 
-        URL url = null;
-        try {
-            url = new URL(builtUri.toString());
-        } catch (MalformedURLException e) {
-            e.printStackTrace();
-        }
+        return buildURL(builtUri);
+    }
 
-        Log.v(TAG, "Bulti URI: " + url);
+    public static URL buildUrlForSpecificMovieReviewList(int movieId) {
+        Uri builtUri = buildReviewListUriById(movieId);
 
-        return url;
+        return buildURL(builtUri);
     }
 
     private static Uri buildMovieListUriByPopular() {
@@ -89,6 +92,15 @@ public final class NetworkUtils {
         Uri builtUri = Uri.parse(String.format(MOVIE_BASE_VIDEOS_URL, movieId)).buildUpon()
                 .appendQueryParameter(API_PARAM,api_key)
                 .appendQueryParameter(LANG_PARAM,language)
+                .build();
+        return builtUri;
+    }
+
+    private static Uri buildReviewListUriById(int movieId) {
+        Uri builtUri = Uri.parse(String.format(MOVIE_BASE_REVIEWS_URL, movieId)).buildUpon()
+                .appendQueryParameter(API_PARAM,api_key)
+                .appendQueryParameter(LANG_PARAM,language)
+                .appendQueryParameter(PAGE_PARAM, Integer.toString(pageNumber))
                 .build();
         return builtUri;
     }

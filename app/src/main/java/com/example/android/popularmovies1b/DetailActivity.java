@@ -38,8 +38,10 @@ public class DetailActivity extends AppCompatActivity {
     private TextView textTrailer1;
     private TextView textTrailer2;
     private TextView textTrailer3;
+    private TextView textReviews;
 
     private String[] movieTrailers;
+    private String[] movieReviews;
     private AppDatabase mDb;
     private boolean favoriteState;
     private static final String FAVORITE = "favorite";
@@ -90,6 +92,7 @@ public class DetailActivity extends AppCompatActivity {
         textTrailer1 = findViewById(R.id.tv_trailer_one);
         textTrailer2 = findViewById(R.id.tv_trailer_two);
         textTrailer3 = findViewById(R.id.tv_trailer_three);
+        textReviews = findViewById(R.id.tv_reviews);
 
         imageStartTrailer1.setVisibility(View.INVISIBLE);
         imageStartTrailer2.setVisibility(View.INVISIBLE);
@@ -97,6 +100,7 @@ public class DetailActivity extends AppCompatActivity {
         textTrailer1.setVisibility(View.INVISIBLE);
         textTrailer2.setVisibility(View.INVISIBLE);
         textTrailer3.setVisibility(View.INVISIBLE);
+        textReviews.setVisibility(View.INVISIBLE);
     }
 
     public void onClickCheckFavorite(View view) {
@@ -172,6 +176,10 @@ public class DetailActivity extends AppCompatActivity {
         overviewTextView.setText(overview);
         favoriteCheckBox.setChecked(favoriteState);
 
+        fetchTrailersAndReviews(id);
+    }
+
+    private void fetchTrailersAndReviews(int movieId) {
         new FetchTrailerDataTask(
                 new FetchTrailerDataTask.AsyncResponse() {
                     @Override
@@ -180,7 +188,18 @@ public class DetailActivity extends AppCompatActivity {
                         setupTrailerViews(trailersResult);
                     }
                 }
-        ).execute(id);
+        ).execute(movieId);
+
+        new FetchReviewsDataTask(
+                new FetchReviewsDataTask.AsyncResponse() {
+                    @Override
+                    public void processFinish(String[] reviewsResult) {
+                        movieReviews = reviewsResult;
+                        setupReviewsView(reviewsResult);
+                        setupReviewUI();
+                    }
+                }
+        ).execute(movieId);
     }
 
     private void setupTrailerOneUI() {
@@ -196,6 +215,10 @@ public class DetailActivity extends AppCompatActivity {
     private void setupTrailerThreeUI() {
         imageStartTrailer3.setVisibility(View.VISIBLE);
         textTrailer3.setVisibility(View.VISIBLE);
+    }
+
+    private void setupReviewUI() {
+        textReviews.setVisibility(View.VISIBLE);
     }
 
     //up to three views will be visible for trailers
@@ -222,6 +245,17 @@ public class DetailActivity extends AppCompatActivity {
                 break;
             default:
                 break;
+        }
+    }
+
+    private void setupReviewsView(String[] reviews) {
+        StringBuilder allReviews = new StringBuilder();
+        if(reviews != null) {
+            for(String review : reviews) {
+                allReviews.append(review + "\n");
+            }
+            textReviews.setText(allReviews);
+            Log.d(TAG, allReviews.toString());
         }
     }
 
@@ -265,6 +299,50 @@ public class DetailActivity extends AppCompatActivity {
         protected void onPostExecute(String[] trailers) {
             if(trailers != null) {
                 delegate.processFinish(trailers);
+            }
+        }
+    }
+
+    public static class FetchReviewsDataTask extends AsyncTask<Integer, Void, String[]> {
+
+        public interface AsyncResponse {
+            void processFinish(String[] reviewsResult);
+        }
+
+        public AsyncResponse delegate = null;
+
+        public FetchReviewsDataTask(AsyncResponse delegate) {
+            this.delegate = delegate;
+        }
+
+        @Override
+        protected String[] doInBackground(Integer... integers) {
+            if(integers.length == 0) {
+                return null;
+            }
+
+            int movieId = integers[0];
+            URL reviewListRequestURL = NetworkUtils.buildUrlForSpecificMovieReviewList(movieId);
+
+            try {
+                String jsonVideoResponse =
+                        NetworkUtils.getResponseFromHttpUrl(reviewListRequestURL);
+
+                String[] simpleReviewsForOneMovie =
+                        OpenMovieJsonUtils.getSimpleReviewStringFromJson(jsonVideoResponse);
+
+                return simpleReviewsForOneMovie;
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                return null;
+            }
+        }
+
+        @Override
+        protected void onPostExecute(String[] reviews) {
+            if(reviews != null) {
+                delegate.processFinish(reviews);
             }
         }
     }
